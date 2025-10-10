@@ -1,5 +1,5 @@
 ---
-title: AI辅助学习-Go_Before
+title: AI辅助学习_Go:Before
 description: Before AI+Go Learning
 slug: Before_AI_Go
 date: 2025-10-10T20:28:00+08:00
@@ -12,7 +12,7 @@ tags:
 #weight: 1       # You can add weight to some posts to override the default sorting (date descending)
 ---
 
-# AI 辅助学习-Go
+# AI 辅助学习_Go
 ## Before
 
 这是AI辅助学习的第一篇，在AI时代，我们需要使用好AI，从学习的角度而言，使用AI并不意味着滥用，更多的是帮助我们提升学习效率，而不是取代学习。
