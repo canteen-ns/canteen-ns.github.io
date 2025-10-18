@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>AI+ on 南山小卖部的个人站</title><link>https://demo.stack.jimmycai.com/categories/ai+/</link><description>Recent content in AI+ on 南山小卖部的个人站</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 12 Oct 2025 15:00:00 +0800</lastBuildDate><atom:link href="https://demo.stack.jimmycai.com/categories/ai+/index.xml" rel="self" type="application/rss+xml"/><item><title>AI辅助学习_Linux001_Linux网络接口与网络空间</title><link>https://demo.stack.jimmycai.com/p/ai_linux001/</link><pubDate>Sun, 12 Oct 2025 15:00:00 +0800</pubDate><guid>https://demo.stack.jimmycai.com/p/ai_linux001/</guid><description>&lt;h1 id="ai-辅助学习_linux_网络接口与网络空间"&gt;AI 辅助学习_Linux_网络接口与网络空间
+&lt;/h1&gt;&lt;p&gt;这几天，在公司帮助同事查问题时，感觉对linux网桥相关的内容不熟悉，对于同事口中的br0、eth0这些东西感觉非常之陌生，虽然站主仅开发上层协议，对底层的数据转发，网络等内容并不了解，但是站主认为作为嵌入式领域开发，对这些底层知识应当还是需要有所了解，遂决定学习记录之。&lt;/p&gt;
+&lt;h2 id="linux-网络基础"&gt;Linux 网络基础
+&lt;/h2&gt;&lt;p&gt;&lt;a class="link" href="../ai_linux000" title="linux 网络知识体系"
+&gt;linux 网络知识体系&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id="网络接口"&gt;网络接口
+&lt;/h3&gt;&lt;p&gt;linux 网络接口分为物理接口和虚拟接口（也叫逻辑接口）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;物理接口： 直接连接到物理网络的接口，如 eth0、wlan0 等。&lt;/li&gt;
+&lt;li&gt;虚拟接口： 不直接连接到物理网络的接口，用于配置和管理网络，如 lo（localhost 接口）、br0（网桥接口）等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;查看网络接口： 可以使用 &lt;code&gt;ifconfig&lt;/code&gt; 或 &lt;code&gt;ip addr&lt;/code&gt; 命令查看系统中的网络接口。&lt;/p&gt;
+&lt;h4 id="常见的物理接口"&gt;常见的物理接口
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;以太网接口：eth0/enp0s3/ens33等&lt;/li&gt;
+&lt;li&gt;光纤接口：常见类型：SFP/SFP+&lt;/li&gt;
+&lt;li&gt;无线接口：wlan0/wlp3s0&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="常见的虚拟接口"&gt;常见的虚拟接口
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;网桥接口：br0&lt;/li&gt;
+&lt;li&gt;隧道接口：tun0/tap0&lt;/li&gt;
+&lt;li&gt;回环接口：lo&lt;/li&gt;
+&lt;li&gt;VLAN接口：eth0.100&lt;/li&gt;
+&lt;li&gt;绑定接口：bond0&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id="linux网桥"&gt;Linux网桥
+&lt;/h4&gt;&lt;p&gt;工作在数据链路层（OSI第二层）的虚拟网络设备，基于mac地址学习，实现多个网络接口（不区分接口类型）的透明桥接&lt;/p&gt;
+&lt;h4 id="网桥主要类型"&gt;网桥主要类型
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;基础类型：标准网桥&lt;/li&gt;
+&lt;li&gt;虚拟化专用：Open vSwitch&lt;/li&gt;
+&lt;li&gt;容器网络：Docker默认网桥&lt;/li&gt;
+&lt;li&gt;特殊用途：MACVLAN网桥&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="网络空间"&gt;网络空间
+&lt;/h3&gt;&lt;p&gt;linux 网络空间（network namespace）是一种将网络资源（如网络接口、路由表、防火墙规则等）隔离开来的机制。每个网络空间都有自己的网络栈，包括自己的IP地址、路由表、防火墙规则等。网络空间可以用于创建隔离的网络环境，例如在容器化环境中，每个容器都有自己的网络空间，容器之间的网络流量是隔离的。&lt;/p&gt;
+&lt;h2 id="linux-虚拟网络实验"&gt;Linux 虚拟网络实验
+&lt;/h2&gt;&lt;p&gt;本实验在wsl(windows subsystem for linux)中进行&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;canteen_ns@DESKTOP-CANTEEN-NS:~$ uname -a
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Linux DESKTOP-CANTEEN-NS 6.6.87.2-microsoft-standard-WSL2 &lt;span class="c1"&gt;#1 SMP PREEMPT_DYNAMIC Thu Jun 5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;canteen_ns@DESKTOP-CANTEEN-NS:~$
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="1检测网络配置"&gt;1、检测网络配置
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;查看网络接口&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;#使用更现代的ip命令，或者传统的ifconfig，此处仅以ip命令为例&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;canteen_ns@DESKTOP-CANTEEN-NS:~$ ip addr show
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;65536&lt;/span&gt; qdisc noqueue state UNKNOWN group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inet 127.0.0.1/8 scope host lo
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; valid_lft forever preferred_lft forever
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inet 10.255.255.254/32 brd 10.255.255.254 scope global lo
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; valid_lft forever preferred_lft forever
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inet6 ::1/128 scope host
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; valid_lft forever preferred_lft forever
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;接口状态: LOOPBACK,UP,LOWER_UP - 回环接口，已启用，链路正常&lt;/p&gt;
+&lt;p&gt;MTU: 65536 - 最大传输单元&lt;/p&gt;
+&lt;p&gt;qdisc: noqueue - 无队列调度（回环接口不需要）&lt;/p&gt;
+&lt;p&gt;状态: UNKNOWN - 正常状态&lt;/p&gt;
+&lt;p&gt;IP地址配置:
+127.0.0.1/8 - 标准的本地回环地址
+10.255.255.254/32 - 额外的回环地址，可能是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;某些服务绑定的特定IP&lt;/li&gt;
+&lt;li&gt;Docker 或容器网络配置&lt;/li&gt;
+&lt;li&gt;自定义的网络服务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;::1/128 - IPv6 回环地址&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m"&gt;1500&lt;/span&gt; qdisc mq state UP group default qlen &lt;span class="m"&gt;1000&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; link/ether 00:15:5d:e5:66:c3 brd ff:ff:ff:ff:ff:ff
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inet 172.23.156.99/20 brd 172.23.159.255 scope global eth0
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; valid_lft forever preferred_lft forever
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inet6 fe80::215:5dff:fee5:66c3/64 scope link
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; valid_lft forever preferred_lft forever
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;接口状态: BROADCAST,MULTICAST,UP,LOWER_UP - 支持广播、组播，已启用，链路正常&lt;/p&gt;
+&lt;p&gt;MTU: 1500 - 标准以太网MTU&lt;/p&gt;
+&lt;p&gt;qdisc: mq - 多队列调度&lt;/p&gt;
+&lt;p&gt;状态: UP - 接口正常运行&lt;/p&gt;
+&lt;p&gt;MAC地址：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;00:15:5d:e5:66:c3 - 虚拟化环境的典型MAC地址（00:15:5d是Microsoft Hyper-V的OUI）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;IPv4配置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;172.23.156.99/20 - 这是WSL2的NAT网络地址&lt;/li&gt;
+&lt;li&gt;网络: 172.23.144.0/20&lt;/li&gt;
+&lt;li&gt;可用范围: 172.23.144.1 - 172.23.159.254&lt;/li&gt;
+&lt;li&gt;广播: 172.23.159.255&lt;/li&gt;
+&lt;li&gt;你的IP: 172.23.156.99&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;IPv6配置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;fe80::215:5dff:fee5:66c3/64 - 链路本地地址（只在本地链路有效）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;查看路由表&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;canteen_ns@DESKTOP-CANTEEN-NS:~$ ip route
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;default via 172.23.144.1 dev eth0 proto kernel
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;172.23.144.0/20 dev eth0 proto kernel scope link src 172.23.156.99
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;默认路由&lt;code&gt;default via 172.23.144.1 dev eth0 proto kernel&lt;/code&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;default: 表示默认路由（0.0.0.0/0），所有不匹配其他路由的数据包都走这条路&lt;/li&gt;
+&lt;li&gt;via 172.23.144.1: 网关地址，这是数据包要发送到的下一跳&lt;/li&gt;
+&lt;li&gt;dev eth0: 使用 eth0 网络接口发送&lt;/li&gt;
+&lt;li&gt;proto kernel: 路由由内核自动设置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;直连路由&lt;code&gt;172.23.144.0/20 dev eth0 proto kernel scope link src 172.23.156.99&lt;/code&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;172.23.144.0/20: 这是 eth0 接口的网络地址范围&lt;/li&gt;
+&lt;li&gt;dev eth0: 使用 eth0 接口发送&lt;/li&gt;
+&lt;li&gt;proto kernel: 路由由内核自动设置&lt;/li&gt;
+&lt;li&gt;scope link: 这是一个直连路由，目标网络直接在本地链路可达&lt;/li&gt;
+&lt;li&gt;src 172.23.156.99: 当从这个网络发送数据包时，使用 172.23.156.99 作为源IP地址&lt;/li&gt;
+&lt;/ul&gt;</description></item><item><title>AI辅助学习_Linux000_网络知识体系</title><link>https://demo.stack.jimmycai.com/p/ai_linux000/</link><pubDate>Sun, 12 Oct 2025 14:00:00 +0800</pubDate><guid>https://demo.stack.jimmycai.com/p/ai_linux000/</guid><description>&lt;h1 id="linux网络知识体系"&gt;Linux网络知识体系
+&lt;/h1&gt;&lt;h2 id="核心知识领域"&gt;核心知识领域：
+&lt;/h2&gt;&lt;h3 id="网络配置管理"&gt;网络配置管理
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 持久化配置（Ubuntu）&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo nano /etc/netplan/01-netcfg.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="接口管理"&gt;接口管理
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ip link &lt;span class="nb"&gt;set&lt;/span&gt; eth0 mtu &lt;span class="m"&gt;1500&lt;/span&gt; &lt;span class="c1"&gt;# 修改MTU值&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ethtool -s eth0 speed &lt;span class="m"&gt;1000&lt;/span&gt; duplex full &lt;span class="c1"&gt;# 设置网卡参数&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="路由与转发"&gt;路由与转发
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sysctl -w net.ipv4.ip_forward&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="c1"&gt;# 启用IP转发&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ip route add 10.0.0.0/24 via 192.168.1.1 metric &lt;span class="m"&gt;100&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="防火墙与安全"&gt;防火墙与安全
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;iptables -A INPUT -p tcp --dport &lt;span class="m"&gt;22&lt;/span&gt; -j ACCEPT
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;nft add table inet filter
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="网络服务"&gt;网络服务
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;systemctl status sshd &lt;span class="c1"&gt;# 服务状态查看&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;journalctl -u nginx --since &lt;span class="s2"&gt;&amp;#34;1 hour ago&amp;#34;&lt;/span&gt; &lt;span class="c1"&gt;# 日志追踪&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="扩展领域"&gt;扩展领域：
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;容器网络（Docker bridge/CNI）&lt;/li&gt;
+&lt;li&gt;虚拟化网络（Libvirt/KVM）&lt;/li&gt;
+&lt;li&gt;无线网络管理（iwconfig/wpa_supplicant）&lt;/li&gt;
+&lt;li&gt;网络调试（tcpdump/tshark）&lt;/li&gt;
+&lt;/ul&gt;</description></item><item><title>AI辅助学习_Go:Before</title><link>https://demo.stack.jimmycai.com/p/before_ai_go/</link><pubDate>Fri, 10 Oct 2025 20:28:00 +0800</pubDate><guid>https://demo.stack.jimmycai.com/p/before_ai_go/</guid><description>&lt;img src="https://demo.stack.jimmycai.com/p/before_ai_go/go.jpg" alt="Featured image of post AI辅助学习_Go:Before" /&gt;&lt;h1 id="ai-辅助学习_go"&gt;AI 辅助学习_Go
+&lt;/h1&gt;&lt;h2 id="before"&gt;Before
+&lt;/h2&gt;&lt;p&gt;这是AI辅助学习的第一篇，在AI时代，我们需要使用好AI，从学习的角度而言，使用AI并不意味着滥用，更多的是帮助我们提升学习效率，而不是取代学习。&lt;/p&gt;
+&lt;p&gt;本系列文章将会采用理论+实践的方式进行学习，通过chat AI来帮我们指定学习计划，梳理知识，从小实验到项目，让我们逐步熟悉Go语言的使用。&lt;/p&gt;</description></item></channel></rss>
