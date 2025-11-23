@@ -1,5 +1,5 @@
 ---
-title: AI辅助学习_Linux001_Linux网络接口与网络空间
+title: AI辅助学习_Linux001_Linux网络接口与网络空间（一）
 description: AI+Linux Learning
 slug: AI_Linux001
 date: 2025-10-12T15:00:00+08:00
@@ -12,7 +12,7 @@ tags:
 #weight: 1       # You can add weight to some posts to override the default sorting (date descending)
 ---
 
-# AI 辅助学习_Linux_网络接口与网络空间
+# AI 辅助学习_Linux_网络接口与网络空间（一）
 
 这几天，在公司帮助同事查问题时，感觉对linux网桥相关的内容不熟悉，对于同事口中的br0、eth0这些东西感觉非常之陌生，虽然站主仅开发上层协议，对底层的数据转发，网络等内容并不了解，但是站主认为作为嵌入式领域开发，对这些底层知识应当还是需要有所了解，遂决定学习记录之。    
 
@@ -51,7 +51,7 @@ linux 网络接口分为物理接口和虚拟接口（也叫逻辑接口）
 ### 网络空间
 linux 网络空间（network namespace）是一种将网络资源（如网络接口、路由表、防火墙规则等）隔离开来的机制。每个网络空间都有自己的网络栈，包括自己的IP地址、路由表、防火墙规则等。网络空间可以用于创建隔离的网络环境，例如在容器化环境中，每个容器都有自己的网络空间，容器之间的网络流量是隔离的。
 
-## Linux 虚拟网络实验
+## Linux 网络接口实验
 本实验在wsl(windows subsystem for linux)中进行
 ```bash
 canteen_ns@DESKTOP-CANTEEN-NS:~$ uname -a
